@@ -1,0 +1,174 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}Inicio - Mi Blog{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <!-- Contenido principal -->
+    <div class="lg:col-span-3">
+        <!-- Barra de búsqueda -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <form method="get" class="flex flex-col sm:flex-row gap-4">
+                <div class="flex-1">
+                    <input type="text" name="q" value="{{ query }}" 
+                           placeholder="Buscar posts..." 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                </div>
+                <button type="submit" class="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors">
+                    <i class="fas fa-search mr-2"></i>Buscar
+                </button>
+            </form>
+        </div>
+
+        <!-- Filtros por categoría -->
+        {% if categorias %}
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <h3 class="text-lg font-semibold mb-4">Categorías</h3>
+            <div class="flex flex-wrap gap-2">
+                <a href="{% url 'blog:lista_posts' %}" 
+                   class="px-4 py-2 rounded-full text-sm {% if not categoria_actual %}bg-orange-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition-colors">
+                    Todas
+                </a>
+                {% for categoria in categorias %}
+                <a href="?categoria={{ categoria.id }}" 
+                   class="px-4 py-2 rounded-full text-sm {% if categoria_actual == categoria.id|stringformat:'s' %}bg-orange-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition-colors">
+                    {{ categoria.nombre }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Lista de posts -->
+        {% if page_obj %}
+        <div class="space-y-8">
+            {% for post in page_obj %}
+            <article class="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                {% if post.imagen %}
+                <div class="h-48 bg-cover bg-center" style="background-image: url('{{ post.imagen.url }}');"></div>
+                {% endif %}
+                
+                <div class="p-6">
+                    <div class="flex items-center text-sm text-gray-500 mb-3">
+                        <span class="flex items-center mr-4">
+                            <i class="fas fa-user mr-1"></i>
+                        <a href="{% url 'blog:posts_por_autor' post.autor.username %}" class="hover:text-orange-600 transition-colors">
+                            {{ post.autor.get_full_name|default:post.autor.username }}
+                        </a>
+                        </span>
+                        <span class="flex items-center mr-4">
+                            <i class="fas fa-calendar mr-1"></i>
+                            {{ post.fecha_publicacion|date:"d M Y" }}
+                        </span>
+                        <span class="flex items-center mr-4">
+                            <i class="fas fa-eye mr-1"></i>
+                            {{ post.visitas }} visitas
+                        </span>
+                        {% if post.categoria %}
+                        <span class="flex items-center">
+                            <i class="fas fa-tag mr-1"></i>
+                            <a href="{% url 'blog:posts_por_categoria' post.categoria.nombre %}" class="hover:text-orange-600 transition-colors">
+                                {{ post.categoria.nombre }}
+                            </a>
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <h2 class="text-2xl font-bold text-gray-900 mb-3">
+                        <a href="{{ post.get_absolute_url }}" class="hover:text-orange-600 transition-colors">
+                            {{ post.titulo }}
+                        </a>
+                    </h2>
+                    
+                    {% if post.resumen %}
+                    <p class="text-gray-600 mb-4">{{ post.resumen }}</p>
+                    {% endif %}
+                    
+                    <div class="flex items-center justify-between">
+                        <a href="{{ post.get_absolute_url }}" 
+                           class="inline-flex items-center text-orange-600 hover:text-orange-700 transition-colors">
+                            Leer más
+                            <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                        
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-comments mr-1"></i>
+                            {{ post.comentarios.count }} comentarios
+                        </div>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+        <!-- Paginación -->
+        {% if page_obj.has_other_pages %}
+        <div class="mt-8 flex justify-center">
+            <nav class="flex items-center space-x-2">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if categoria_actual %}&categoria={{ categoria_actual }}{% endif %}" 
+                   class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span class="px-3 py-2 text-sm bg-orange-600 text-white border border-orange-600 rounded-md">
+                    {{ num }}
+                </span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if categoria_actual %}&categoria={{ categoria_actual }}{% endif %}" 
+                   class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                    {{ num }}
+                </a>
+                {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if categoria_actual %}&categoria={{ categoria_actual }}{% endif %}" 
+                   class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div class="bg-white rounded-lg shadow-sm p-8 text-center">
+            <i class="fas fa-search text-4xl text-gray-400 mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">No se encontraron posts</h3>
+            <p class="text-gray-500">
+                {% if query %}
+                No hay posts que coincidan con tu búsqueda "{{ query }}".
+                {% else %}
+                Aún no hay posts publicados.
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="lg:col-span-1">
+        <div class="bg-white rounded-lg shadow-sm p-6 sticky top-8">
+            <h3 class="text-lg font-semibold mb-4">Últimos Posts</h3>
+            <div class="space-y-4">
+                {% for post in page_obj|slice:":5" %}
+                <div class="border-b border-gray-200 pb-4 last:border-b-0">
+                    <h4 class="font-medium text-sm mb-1">
+                        <a href="{{ post.get_absolute_url }}" class="hover:text-orange-600 transition-colors">
+                            {{ post.titulo|truncatechars:50 }}
+                        </a>
+                    </h4>
+                    <p class="text-xs text-gray-500">
+                        {{ post.fecha_publicacion|date:"d M Y" }}
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

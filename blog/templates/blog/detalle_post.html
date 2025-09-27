@@ -1,0 +1,177 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}{{ post.titulo }} - Mi Blog{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <!-- Contenido principal -->
+    <div class="lg:col-span-3">
+        <!-- Navegación -->
+        <div class="mb-6">
+            <a href="{% url 'blog:lista_posts' %}" class="text-orange-600 hover:text-orange-700 transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i>Volver al blog
+            </a>
+        </div>
+
+        <!-- Post -->
+        <article class="bg-white rounded-lg shadow-sm overflow-hidden">
+            {% if post.imagen %}
+            <div class="h-64 md:h-96 bg-cover bg-center" style="background-image: url('{{ post.imagen.url }}');"></div>
+            {% endif %}
+            
+            <div class="p-6 md:p-8">
+                <!-- Meta información -->
+                <div class="flex flex-wrap items-center text-sm text-gray-500 mb-6">
+                    <span class="flex items-center mr-6 mb-2">
+                        <i class="fas fa-user mr-2"></i>
+                        <a href="{% url 'blog:posts_por_autor' post.autor.username %}" class="hover:text-orange-600 transition-colors">
+                            {{ post.autor.get_full_name|default:post.autor.username }}
+                        </a>
+                    </span>
+                    <span class="flex items-center mr-6 mb-2">
+                        <i class="fas fa-calendar mr-2"></i>
+                        {{ post.fecha_publicacion|date:"d M Y" }}
+                    </span>
+                    <span class="flex items-center mr-6 mb-2">
+                        <i class="fas fa-eye mr-2"></i>
+                        {{ post.visitas }} visitas
+                    </span>
+                    {% if post.categoria %}
+                    <span class="flex items-center mb-2">
+                        <i class="fas fa-tag mr-2"></i>
+                        <a href="{% url 'blog:posts_por_categoria' post.categoria.nombre %}" class="hover:text-orange-600 transition-colors">
+                            {{ post.categoria.nombre }}
+                        </a>
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <!-- Título -->
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">{{ post.titulo }}</h1>
+                
+                <!-- Contenido -->
+                <div class="prose prose-lg max-w-none text-gray-700 leading-relaxed">
+                    {{ post.contenido|linebreaks }}
+                </div>
+                
+                <!-- Compartir -->
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <h3 class="text-lg font-semibold mb-4">Compartir este post</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="flex items-center justify-center w-10 h-10 bg-orange-600 text-white rounded-full hover:bg-orange-700 transition-colors">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="flex items-center justify-center w-10 h-10 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="flex items-center justify-center w-10 h-10 bg-orange-800 text-white rounded-full hover:bg-orange-900 transition-colors">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="#" class="flex items-center justify-center w-10 h-10 bg-gray-600 text-white rounded-full hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-link"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Comentarios -->
+        <div class="mt-8 bg-white rounded-lg shadow-sm p-6 md:p-8">
+            <h3 class="text-2xl font-bold text-gray-900 mb-6">
+                Comentarios ({{ comentarios.count }})
+            </h3>
+            
+            <!-- Formulario de comentario -->
+            {% if user.is_authenticated %}
+            <form method="post" class="mb-8">
+                {% csrf_token %}
+                <div class="mb-4">
+                    {{ form.contenido }}
+                </div>
+                <button type="submit" class="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors">
+                    <i class="fas fa-paper-plane mr-2"></i>Publicar comentario
+                </button>
+            </form>
+            {% else %}
+            <div class="bg-gray-100 rounded-lg p-4 mb-8 text-center">
+                <p class="text-gray-600 mb-4">Para comentar, necesitas iniciar sesión.</p>
+                <a href="/admin/" class="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Iniciar sesión
+                </a>
+            </div>
+            {% endif %}
+            
+            <!-- Lista de comentarios -->
+            <div class="space-y-6">
+                {% for comentario in comentarios %}
+                <div class="border-b border-gray-200 pb-6 last:border-b-0">
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0">
+                            <div class="w-10 h-10 bg-orange-600 text-white rounded-full flex items-center justify-center">
+                                {{ comentario.autor.username|first|upper }}
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <h4 class="font-semibold text-gray-900">{{ comentario.autor.get_full_name|default:comentario.autor.username }}</h4>
+                                <span class="text-sm text-gray-500">{{ comentario.fecha_creacion|date:"d M Y H:i" }}</span>
+                            </div>
+                            <p class="text-gray-700">{{ comentario.contenido|linebreaks }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-8">
+                    <i class="fas fa-comments text-4xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-500">Aún no hay comentarios. ¡Sé el primero en comentar!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="lg:col-span-1">
+        <!-- Posts relacionados -->
+        {% if posts_relacionados %}
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <h3 class="text-lg font-semibold mb-4">Posts Relacionados</h3>
+            <div class="space-y-4">
+                {% for post_rel in posts_relacionados %}
+                <div class="border-b border-gray-200 pb-4 last:border-b-0">
+                    <h4 class="font-medium text-sm mb-2">
+                        <a href="{{ post_rel.get_absolute_url }}" class="hover:text-orange-600 transition-colors">
+                            {{ post_rel.titulo|truncatechars:50 }}
+                        </a>
+                    </h4>
+                    <p class="text-xs text-gray-500">
+                        {{ post_rel.fecha_publicacion|date:"d M Y" }}
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Información del autor -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-lg font-semibold mb-4">Sobre el Autor</h3>
+            <div class="text-center">
+                <div class="w-16 h-16 bg-orange-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                    {{ post.autor.username|first|upper }}
+                </div>
+                <h4 class="font-semibold text-gray-900 mb-2">
+                    {{ post.autor.get_full_name|default:post.autor.username }}
+                </h4>
+                <p class="text-sm text-gray-600 mb-4">
+                    {{ post.autor.posts.count }} posts publicados
+                </p>
+                <a href="{% url 'blog:posts_por_autor' post.autor.username %}" 
+                   class="inline-block bg-orange-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-orange-700 transition-colors">
+                    Ver todos los posts
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
