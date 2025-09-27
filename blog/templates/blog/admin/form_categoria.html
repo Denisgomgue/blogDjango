@@ -1,0 +1,99 @@
+{% extends 'blog/admin/base_admin.html' %}
+
+{% block title %}{{ titulo }} - Panel de Administración{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">
+                    <i class="fas fa-{% if categoria %}edit{% else %}plus{% endif %} mr-3 text-orange-600"></i>{{ titulo }}
+                </h1>
+                <p class="text-gray-600 mt-2">
+                    {% if categoria %}
+                        Edita la información de la categoría
+                    {% else %}
+                        Crea una nueva categoría para organizar tus posts
+                    {% endif %}
+                </p>
+            </div>
+            <a href="{% url 'blog:admin_categorias' %}" class="text-gray-600 hover:text-orange-600 transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i>Volver a categorías
+            </a>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-sm p-6">
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- Nombre -->
+            <div class="mb-6">
+                <label for="{{ form.nombre.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.nombre.label }}
+                </label>
+                {{ form.nombre }}
+                <p class="mt-1 text-sm text-gray-500">Nombre único para la categoría</p>
+                {% if form.nombre.errors %}
+                <div class="mt-1 text-sm text-red-600">
+                    {% for error in form.nombre.errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Descripción -->
+            <div class="mb-6">
+                <label for="{{ form.descripcion.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.descripcion.label }}
+                </label>
+                {{ form.descripcion }}
+                <p class="mt-1 text-sm text-gray-500">Descripción opcional de la categoría</p>
+                {% if form.descripcion.errors %}
+                <div class="mt-1 text-sm text-red-600">
+                    {% for error in form.descripcion.errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Botones -->
+            <div class="flex justify-end space-x-4">
+                <a href="{% url 'blog:admin_categorias' %}" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                    Cancelar
+                </a>
+                <button type="submit" class="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors">
+                    <i class="fas fa-save mr-2"></i>
+                    {% if categoria %}Actualizar{% else %}Crear{% endif %} Categoría
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Información adicional -->
+    {% if categoria %}
+    <div class="mt-8 bg-white rounded-lg shadow-sm p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            <i class="fas fa-info-circle mr-2 text-orange-600"></i>Información
+        </h3>
+        <div class="space-y-3 text-sm">
+            <div class="flex justify-between">
+                <span class="text-gray-600">ID:</span>
+                <span class="font-medium">{{ categoria.pk }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-600">Posts:</span>
+                <span class="font-medium">{{ categoria.post_set.count }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-600">Creada:</span>
+                <span class="font-medium">{{ categoria.fecha_creacion|date:"d M Y" }}</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

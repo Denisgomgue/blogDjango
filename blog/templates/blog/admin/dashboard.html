@@ -1,0 +1,184 @@
+{% extends 'blog/admin/base_admin.html' %}
+
+{% block title %}Dashboard - Panel de Administración{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">
+        <i class="fas fa-tachometer-alt mr-3 text-orange-600"></i>Dashboard
+    </h1>
+    <p class="text-gray-600 mt-2">Bienvenido al panel de administración de tu blog</p>
+</div>
+
+<!-- Estadísticas -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center">
+            <div class="p-3 bg-orange-100 rounded-full">
+                <i class="fas fa-newspaper text-orange-600 text-xl"></i>
+            </div>
+            <div class="ml-4">
+                <p class="text-sm font-medium text-gray-600">Total Posts</p>
+                <p class="text-2xl font-bold text-gray-900">{{ total_posts }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center">
+            <div class="p-3 bg-green-100 rounded-full">
+                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+            </div>
+            <div class="ml-4">
+                <p class="text-sm font-medium text-gray-600">Publicados</p>
+                <p class="text-2xl font-bold text-gray-900">{{ posts_publicados }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center">
+            <div class="p-3 bg-yellow-100 rounded-full">
+                <i class="fas fa-edit text-yellow-600 text-xl"></i>
+            </div>
+            <div class="ml-4">
+                <p class="text-sm font-medium text-gray-600">Borradores</p>
+                <p class="text-2xl font-bold text-gray-900">{{ posts_borrador }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center">
+            <div class="p-3 bg-blue-100 rounded-full">
+                <i class="fas fa-tags text-blue-600 text-xl"></i>
+            </div>
+            <div class="ml-4">
+                <p class="text-sm font-medium text-gray-600">Categorías</p>
+                <p class="text-2xl font-bold text-gray-900">{{ total_categorias }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones rápidas -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <div class="bg-white rounded-lg shadow-sm p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">
+            <i class="fas fa-bolt mr-2 text-orange-600"></i>Acciones Rápidas
+        </h2>
+        <div class="space-y-3">
+            <a href="{% url 'blog:crear_post' %}" class="flex items-center p-3 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors">
+                <i class="fas fa-plus text-orange-600 mr-3"></i>
+                <span class="text-gray-700">Crear nuevo post</span>
+            </a>
+            <a href="{% url 'blog:crear_categoria' %}" class="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                <i class="fas fa-tag text-blue-600 mr-3"></i>
+                <span class="text-gray-700">Crear nueva categoría</span>
+            </a>
+            <a href="{% url 'blog:admin_posts' %}" class="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                <i class="fas fa-list text-green-600 mr-3"></i>
+                <span class="text-gray-700">Gestionar posts</span>
+            </a>
+            <a href="{% url 'blog:admin_categorias' %}" class="flex items-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+                <i class="fas fa-cogs text-purple-600 mr-3"></i>
+                <span class="text-gray-700">Gestionar categorías</span>
+            </a>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-sm p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">
+            <i class="fas fa-chart-line mr-2 text-orange-600"></i>Estadísticas
+        </h2>
+        <div class="space-y-4">
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600">Posts publicados</span>
+                <span class="font-semibold text-gray-900">{{ posts_publicados }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600">Posts en borrador</span>
+                <span class="font-semibold text-gray-900">{{ posts_borrador }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600">Total categorías</span>
+                <span class="font-semibold text-gray-900">{{ total_categorias }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600">Total comentarios</span>
+                <span class="font-semibold text-gray-900">{{ total_comentarios }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Posts recientes y populares -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Posts recientes -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">
+            <i class="fas fa-clock mr-2 text-orange-600"></i>Posts Recientes
+        </h2>
+        {% if posts_recientes %}
+        <div class="space-y-3">
+            {% for post in posts_recientes %}
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div class="flex-1">
+                    <h3 class="font-medium text-gray-900 text-sm">
+                        <a href="{% url 'blog:detalle_post_admin' post.pk %}" class="hover:text-orange-600 transition-colors">
+                            {{ post.titulo|truncatechars:40 }}
+                        </a>
+                    </h3>
+                    <p class="text-xs text-gray-500">
+                        {{ post.fecha_creacion|date:"d M Y" }} - 
+                        <span class="{% if post.estado == 'publicado' %}text-green-600{% else %}text-yellow-600{% endif %}">
+                            {{ post.estado|title }}
+                        </span>
+                    </p>
+                </div>
+                <div class="flex space-x-2">
+                    <a href="{% url 'blog:editar_post' post.pk %}" class="text-orange-600 hover:text-orange-700 transition-colors">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-center py-4">No hay posts recientes</p>
+        {% endif %}
+    </div>
+    
+    <!-- Posts populares -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">
+            <i class="fas fa-fire mr-2 text-orange-600"></i>Posts Populares
+        </h2>
+        {% if posts_populares %}
+        <div class="space-y-3">
+            {% for post in posts_populares %}
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div class="flex-1">
+                    <h3 class="font-medium text-gray-900 text-sm">
+                        <a href="{% url 'blog:detalle_post_admin' post.pk %}" class="hover:text-orange-600 transition-colors">
+                            {{ post.titulo|truncatechars:40 }}
+                        </a>
+                    </h3>
+                    <p class="text-xs text-gray-500">
+                        <i class="fas fa-eye mr-1"></i>{{ post.visitas }} visitas
+                    </p>
+                </div>
+                <div class="flex space-x-2">
+                    <a href="{% url 'blog:editar_post' post.pk %}" class="text-orange-600 hover:text-orange-700 transition-colors">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-center py-4">No hay posts populares</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

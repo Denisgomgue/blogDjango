@@ -1,0 +1,170 @@
+{% extends 'blog/admin/base_admin.html' %}
+
+{% block title %}Gestionar Posts - Panel de Administración{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-8">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">
+            <i class="fas fa-newspaper mr-3 text-orange-600"></i>Gestionar Posts
+        </h1>
+        <p class="text-gray-600 mt-2">Administra todos tus posts</p>
+    </div>
+    <a href="{% url 'blog:crear_post' %}" class="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors">
+        <i class="fas fa-plus mr-2"></i>Nuevo Post
+    </a>
+</div>
+
+<!-- Filtros y búsqueda -->
+<div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+    <form method="get" class="flex flex-col sm:flex-row gap-4">
+        <div class="flex-1">
+            <input type="text" name="q" value="{{ query }}" 
+                   placeholder="Buscar posts..." 
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+        </div>
+        <div>
+            <select name="estado" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                <option value="">Todos los estados</option>
+                <option value="publicado" {% if estado_actual == 'publicado' %}selected{% endif %}>Publicado</option>
+                <option value="borrador" {% if estado_actual == 'borrador' %}selected{% endif %}>Borrador</option>
+            </select>
+        </div>
+        <button type="submit" class="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors">
+            <i class="fas fa-search mr-2"></i>Buscar
+        </button>
+    </form>
+</div>
+
+<!-- Lista de posts -->
+{% if page_obj %}
+<div class="bg-white rounded-lg shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Post</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visitas</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for post in page_obj %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            {% if post.imagen %}
+                            <div class="flex-shrink-0 h-10 w-10">
+                                <img class="h-10 w-10 rounded-full object-cover" src="{{ post.imagen.url }}" alt="{{ post.titulo }}">
+                            </div>
+                            {% else %}
+                            <div class="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                <i class="fas fa-image text-gray-400"></i>
+                            </div>
+                            {% endif %}
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">
+                                    <a href="{% url 'blog:detalle_post_admin' post.pk %}" class="hover:text-orange-600 transition-colors">
+                                        {{ post.titulo|truncatechars:50 }}
+                                    </a>
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    {{ post.resumen|truncatechars:60 }}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if post.categoria %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {{ post.categoria.nombre }}
+                        </span>
+                        {% else %}
+                        <span class="text-gray-400">Sin categoría</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if post.estado == 'publicado' %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                            {{ post.estado|title }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ post.fecha_creacion|date:"d M Y" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <i class="fas fa-eye mr-1"></i>{{ post.visitas }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <a href="{% url 'blog:detalle_post_admin' post.pk %}" class="text-orange-600 hover:text-orange-700 transition-colors" title="Ver">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'blog:editar_post' post.pk %}" class="text-blue-600 hover:text-blue-700 transition-colors" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'blog:eliminar_post' post.pk %}" class="text-red-600 hover:text-red-700 transition-colors" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Paginación -->
+{% if page_obj.has_other_pages %}
+<div class="mt-8 flex justify-center">
+    <nav class="flex items-center space-x-2">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}" 
+           class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+            <i class="fas fa-chevron-left"></i>
+        </a>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <span class="px-3 py-2 text-sm bg-orange-600 text-white border border-orange-600 rounded-md">
+            {{ num }}
+        </span>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <a href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}" 
+           class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+            {{ num }}
+        </a>
+        {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if estado_actual %}&estado={{ estado_actual }}{% endif %}" 
+           class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+            <i class="fas fa-chevron-right"></i>
+        </a>
+        {% endif %}
+    </nav>
+</div>
+{% endif %}
+
+{% else %}
+<div class="bg-white rounded-lg shadow-sm p-8 text-center">
+    <i class="fas fa-newspaper text-4xl text-gray-400 mb-4"></i>
+    <h3 class="text-xl font-semibold text-gray-700 mb-2">No hay posts</h3>
+    <p class="text-gray-500 mb-6">
+        {% if query %}
+        No se encontraron posts que coincidan con tu búsqueda "{{ query }}".
+        {% else %}
+        Aún no has creado ningún post.
+        {% endif %}
+    </p>
+    <a href="{% url 'blog:crear_post' %}" class="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors">
+        <i class="fas fa-plus mr-2"></i>Crear primer post
+    </a>
+</div>
+{% endif %}
+{% endblock %}
