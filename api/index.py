@@ -15,4 +15,8 @@ application = get_wsgi_application()
 
 # Vercel handler
 def handler(request):
-    return application(request)
+    try:
+        return application(request)
+    except Exception as e:
+        from django.http import HttpResponse
+        return HttpResponse(f"Error: {str(e)}", status=500)

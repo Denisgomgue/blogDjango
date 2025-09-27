@@ -27,7 +27,10 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-uw33m#go*)8)ujm2b3_k9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',') + ['.vercel.app', '.now.sh']
+# Configuración de hosts permitidos
+ALLOWED_HOSTS = ['*']  # Temporal para Vercel
+if not DEBUG:
+    ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',') + ['.vercel.app', '.now.sh']
 
 
 # Application definition
@@ -75,11 +78,18 @@ WSGI_APPLICATION = 'mi_blog.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# Configuración de base de datos
 DATABASES = {
     'default': dj_database_url.config(
         default=config('DATABASE_URL', default='sqlite:///db.sqlite3')
     )
 }
+
+# Configuración específica para Vercel
+if os.environ.get('VERCEL'):
+    DATABASES['default'] = dj_database_url.config(
+        default=config('DATABASE_URL', default='sqlite:///db.sqlite3')
+    )
 
 
 # Password validation
@@ -126,10 +136,11 @@ MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / "media"
 
 # Configuración para Vercel
-import os
 if os.environ.get('VERCEL'):
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    # Deshabilitar archivos estáticos en Vercel
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
